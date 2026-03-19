@@ -19,7 +19,7 @@ export class UserModel {
   id!: number;
 
   @Column({
-    type: 'text',
+    type: 'varchar',
     name: 'title',
     length: 200,
     nullable: false,
