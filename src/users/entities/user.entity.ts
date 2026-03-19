@@ -8,8 +8,9 @@
  * role: [RolesEnum.USER, RolesEnum.ADMIN]
  */
 
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RolesEnum } from '../const/role.const';
+import { PostsModel } from 'src/posts/entities/post.entity';
 
 @Entity()
 export class UsersModel {
@@ -31,4 +32,6 @@ export class UsersModel {
     default: RolesEnum.USER,
   })
   role: RolesEnum;
+  @OneToMany(() => PostsModel, (post) => post.author)
+  posts: PostsModel[]; //user에선 모든 posts들을 가질수있따.
 }

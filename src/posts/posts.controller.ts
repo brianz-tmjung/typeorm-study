@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
-  }
-
+  // 1) GET /posts
+  // 모든 post를 다 가져온다
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  getPosts() {
+    return this.postsService.getAllPosts();
   }
 
+  // 2) GET /posts/:id
+  // id에 해당하는 post를 가져온다
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  getPost(@Param('id') id: string) {
+    return this.postsService.getPostById(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  // 3) POST /posts
+  // 새로운 post를 생성한다
+  @Post()
+  postPost(
+    @Body('author') authorId: number,
+    @Body('title') title: string,
+    @Body('content') content: string,
+  ) {
+    return this.postsService.createPost(authorId, title, content);
   }
 
+  // 4) PUT /posts/:id
+  // id에 해당하는 post를 변경하거나 생성한다
+  @Put(':id')
+  putPost(
+    @Param('id') id: string,
+    @Body('title') title?: string,
+    @Body('content') content?: string,
+  ) {
+    return this.postsService.updatePost(+id, title, content);
+  }
+
+  // 5) DELETE /posts/:id
+  // id에 해당하는 post를 삭제한다
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  deletePost(@Param('id') id: string) {
+    return this.postsService.deletePost(+id);
   }
 }
