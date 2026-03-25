@@ -8,6 +8,7 @@ import { StudentModel, TeacherModel } from './entity/person.entity';
 import { UsersModel } from './users/entities/user.entity';
 import { PostsModel } from './posts/entities/post.entity';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     TypeOrmModule.forFeature([UserModel]),
     PostsModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
