@@ -3,8 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersModel } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
-
-const JWT_SECRET = 'typeorm-study-secret';
+import {
+  JWT_SECRET,
+  HASH_ROUNDS,
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+} from './const/auth.const';
 
 @Injectable()
 export class AuthService {
@@ -99,7 +103,7 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: JWT_SECRET,
-      expiresIn: isRefreshToken ? 3600 : 300,
+      expiresIn: isRefreshToken ? REFRESH_TOKEN_EXPIRY : ACCESS_TOKEN_EXPIRY,
     });
   }
 
@@ -122,7 +126,7 @@ export class AuthService {
   async registerWithEmail(
     user: Pick<UsersModel, 'email' | 'nickname' | 'password'>,
   ) {
-    const hash = await bcrypt.hash(user.password, 10);
+    const hash = await bcrypt.hash(user.password, HASH_ROUNDS);
 
     const newUser = await this.usersService.createUser(
       user.nickname,
@@ -150,6 +154,31 @@ export class AuthService {
    * 비밀번호가 맞는지 확인
    * 모두 통과되면 사용자 정보 반환
    */
+  /**
+   * 토큰을 검증하고 새로운 토큰을 발급
+   * Bearer 토큰을 받아서 검증 후 새로운 access 또는 refresh 토큰 반환
+   */
+  verifyToken(token: string) {
+    return this.jwtService.verify(token, {
+      secret: JWT_SECRET,
+    });
+  }
+
+  rotateToken(token: string, isRefreshToken: boolean) {
+    const decoded = this.verifyToken(token);
+
+    if (decoded.type !== 'refresh') {
+      throw new UnauthorizedException(
+        '토큰 재발급은 refresh 토큰으로만 가능합니다.',
+      );
+    }
+
+    return this.signToken(
+      { email: decoded.email, id: decoded.sub },
+      isRefreshToken,
+    );
+  }
+
   async authenticateWithEmailAndPassword(
     user: Pick<UsersModel, 'email' | 'password'>,
   ) {
