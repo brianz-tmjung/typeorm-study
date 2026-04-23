@@ -2,12 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostsModel } from './entities/post.entity';
+import { CreatePostDto } from './dto/create-post.dto';
+import { PaginatePostDto } from './dto/paginate-post.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
+    private readonly commonService: CommonService,
   ) {}
 
   // 1) GET /posts
@@ -15,6 +19,13 @@ export class PostsService {
     return this.postsRepository.find({
       relations: ['author'],
     });
+  }
+
+  // GET /posts/paginate
+  async paginatePosts(dto: PaginatePostDto) {
+    return this.commonService.paginate(dto, this.postsRepository, {
+      relations: ['author'],
+    }, '/posts');
   }
 
   // 2) GET /posts/:id
@@ -30,13 +41,12 @@ export class PostsService {
   }
 
   // 3) POST /posts
-  async createPost(authorId: number, title: string, content: string) {
+  async createPost(authorId: number, postDto: CreatePostDto) {
     const post = this.postsRepository.create({
       author: {
         id: authorId,
       },
-      title,
-      content,
+      ...postDto,
       likeCount: 0,
       commentCount: 0,
     });
